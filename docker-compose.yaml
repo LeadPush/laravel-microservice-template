@@ -1,0 +1,40 @@
+version: "3.8"
+
+services:
+  microservice:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+      args:
+        ARCHITECTURE: ${ARCHITECTURE:-linux/amd64}
+    env_file:
+      - ./.env.docker
+    volumes:
+      - ./:/app
+    networks:
+      - microservice-network
+    expose:
+      - 9000
+    ports:
+      - "80:80"
+    depends_on:
+      - database
+  database:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - microservicedb:/var/lib/mysql
+    networks:
+      - microservice-network
+    ports:
+      - 33060:3306
+
+networks:
+  microservice-network:
+    driver: bridge
+
+volumes:
+  microservicedb:
+    driver: local
